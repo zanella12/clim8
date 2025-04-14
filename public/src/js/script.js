@@ -3,10 +3,8 @@ let forecastData = {}
 let currentDisplayMode = "all"
 let currentSelectedDay = 0
 let currentUnit = localStorage.getItem("clim8_unit") || "metric"
-let currentTimezoneOffset = 0 // Store the timezone offset from the API
-
+let currentTimezoneOffset = 0 
 let locationButtonActive = false
-
 const iconMapping = {
   "01d": "clear-day.svg",
   "01n": "clear-night.svg",
@@ -27,12 +25,10 @@ const iconMapping = {
   "50d": "fog-day.svg",
   "50n": "fog-night.svg",
 }
-
 const getIconUrl = (iconCode) => {
   const svgFileName = iconMapping[iconCode] || "not-available.svg"
   return `src/svg/${svgFileName}`
 }
-
 const windDescriptions = [
   { max: 0.2, text: "Calm" },
   { max: 1.5, text: "Light Air" },
@@ -48,7 +44,6 @@ const windDescriptions = [
   { max: 32.6, text: "Violent Storm" },
   { max: Number.POSITIVE_INFINITY, text: "Hurricane" },
 ]
-
 const fallbackCities = [
   { name: "London", country: "GB", lat: 51.5074, lon: -0.1278 },
   { name: "New York", country: "US", lat: 40.7128, lon: -74.006 },
@@ -56,14 +51,12 @@ const fallbackCities = [
   { name: "Paris", country: "FR", lat: 48.8566, lon: 2.3522 },
   { name: "Sydney", country: "AU", lat: -33.8688, lon: 151.2093 },
 ]
-
 function getLocationTime(timestamp) {
-  const date = new Date(timestamp * 1000)
-  // Adjust the date using the timezone offset from the API
-  date.setSeconds(date.getSeconds() + currentTimezoneOffset)
-  return date
+  const utcDate = new Date(timestamp * 1000);
+  const browserOffset = new Date().getTimezoneOffset() * 60;
+  const finalTimestamp = timestamp + currentTimezoneOffset + browserOffset;
+  return new Date(finalTimestamp * 1000);
 }
-
 function setLoadingPlaceholders() {
   document.getElementById("current-temp").textContent = "--°"
   document.getElementById("feels-like").textContent = "Feels like --°"
@@ -75,20 +68,16 @@ function setLoadingPlaceholders() {
   document.getElementById("visibility").textContent = "--"
   document.getElementById("sunrise").textContent = "--:--"
   document.getElementById("sunset").textContent = "--:--"
-  
   document.getElementById("weather-icon-placeholder").style.display = "flex"
   document.getElementById("weather-icon").classList.add("hidden")
 }
-
 function requestLocation() {
   document.getElementById("loading").style.display = "block"
   document.getElementById("error-message").style.display = "none"
   document.getElementById("search-error").style.display = "none"
   setLoadingPlaceholders()
-
   locationButtonActive = true
   updateLocationButton()
-
   if (navigator.geolocation) {
     navigator.geolocation.getCurrentPosition(
       (position) => {
@@ -105,7 +94,6 @@ function requestLocation() {
         document.getElementById("error-message").style.display = "block"
         getWeatherData(fallbackLocation.lat, fallbackLocation.lon)
         getForecastData(fallbackLocation.lat, fallbackLocation.lon)
-
         locationButtonActive = false
         updateLocationButton()
       },
@@ -116,12 +104,10 @@ function requestLocation() {
     document.getElementById("error-message").style.display = "block"
     getWeatherData(fallbackLocation.lat, fallbackLocation.lon)
     getForecastData(fallbackLocation.lat, fallbackLocation.lon)
-
     locationButtonActive = false
     updateLocationButton()
   }
 }
-
 function updateLocationButton() {
   const locationBtn = document.getElementById("location-btn")
   if (locationButtonActive) {
@@ -132,10 +118,8 @@ function updateLocationButton() {
     locationBtn.classList.add("btn-outline")
   }
 }
-
 document.addEventListener("DOMContentLoaded", () => {
   setLoadingPlaceholders()
-
   if (window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)").matches) {
     document.body.classList.add("dark-mode")
     document.getElementById("dark-btn").classList.add("btn-active")
@@ -144,7 +128,6 @@ document.addEventListener("DOMContentLoaded", () => {
     document.getElementById("light-btn").classList.add("btn-active")
     document.getElementById("dark-btn").classList.add("btn-outline")
   }
-
   document.getElementById("light-btn").addEventListener("click", () => {
     document.body.classList.remove("dark-mode")
     document.getElementById("light-btn").classList.remove("btn-outline")
@@ -152,7 +135,6 @@ document.addEventListener("DOMContentLoaded", () => {
     document.getElementById("dark-btn").classList.remove("btn-active")
     document.getElementById("dark-btn").classList.add("btn-outline")
   })
-
   document.getElementById("dark-btn").addEventListener("click", () => {
     document.body.classList.add("dark-mode")
     document.getElementById("dark-btn").classList.remove("btn-outline")
@@ -160,10 +142,8 @@ document.addEventListener("DOMContentLoaded", () => {
     document.getElementById("light-btn").classList.remove("btn-active")
     document.getElementById("light-btn").classList.add("btn-outline")
   })
-
   document.getElementById("location-btn").classList.add("btn-outline")
   document.getElementById("location-btn").addEventListener("click", requestLocation)
-
   document.getElementById("metric-btn").addEventListener("click", () => {
     if (currentUnit !== "metric") {
       currentUnit = "metric"
@@ -172,7 +152,6 @@ document.addEventListener("DOMContentLoaded", () => {
       refreshWeatherData()
     }
   })
-
   document.getElementById("imperial-btn").addEventListener("click", () => {
     if (currentUnit !== "imperial") {
       currentUnit = "imperial"
@@ -181,22 +160,17 @@ document.addEventListener("DOMContentLoaded", () => {
       refreshWeatherData()
     }
   })
-
   updateUnitButtons()
-
   document.getElementById("search-input").addEventListener("input", () => {
     locationButtonActive = false
     updateLocationButton()
   })
-
   requestLocation()
   setupSearch()
 })
-
 function updateUnitButtons() {
   const metricBtn = document.getElementById("metric-btn")
   const imperialBtn = document.getElementById("imperial-btn")
-
   if (currentUnit === "metric") {
     metricBtn.classList.remove("btn-outline")
     metricBtn.classList.add("btn-active")
@@ -209,35 +183,28 @@ function updateUnitButtons() {
     imperialBtn.classList.add("btn-active")
   }
 }
-
 function refreshWeatherData() {
   if (currentLocation.lat && currentLocation.lon) {
     getWeatherData(currentLocation.lat, currentLocation.lon)
     getForecastData(currentLocation.lat, currentLocation.lon)
   }
 }
-
 function getFallbackLocation() {
   return fallbackCities[Math.floor(Math.random() * fallbackCities.length)]
 }
-
 function setupSearch() {
   const searchInput = document.getElementById("search-input")
   const suggestionsContainer = document.getElementById("suggestions")
   const searchError = document.getElementById("search-error")
-
   let timeoutId
-
   searchInput.addEventListener("input", () => {
     clearTimeout(timeoutId)
     const query = searchInput.value.trim()
-
     if (query.length < 2) {
       suggestionsContainer.style.display = "none"
       searchError.style.display = "none"
       return
     }
-
     timeoutId = setTimeout(() => {
       fetch(`/api/geocode?q=${query}`)
         .then((response) => response.json())
@@ -255,10 +222,8 @@ function setupSearch() {
                 currentLocation = { lat: item.lat, lon: item.lon }
                 document.getElementById("loading").style.display = "block"
                 setLoadingPlaceholders()
-
                 locationButtonActive = false
                 updateLocationButton()
-
                 getWeatherData(item.lat, item.lon)
                 getForecastData(item.lat, item.lon)
               })
@@ -278,19 +243,16 @@ function setupSearch() {
         })
     }, 300)
   })
-
   document.addEventListener("click", (e) => {
     if (e.target !== searchInput) {
       suggestionsContainer.style.display = "none"
     }
   })
 }
-
 function getWeatherData(lat, lon) {
   document.getElementById("loading").style.display = "block"
   document.getElementById("error-message").style.display = "none"
   document.getElementById("search-error").style.display = "none"
-
   fetch(`/api/weather?lat=${lat}&lon=${lon}&units=${currentUnit}`)
     .then((response) => {
       if (!response.ok) {
@@ -299,7 +261,7 @@ function getWeatherData(lat, lon) {
       return response.json()
     })
     .then((data) => {
-      currentTimezoneOffset = data.timezone // Store the timezone offset
+      currentTimezoneOffset = data.timezone 
       updateCurrentWeather(data)
       document.getElementById("loading").style.display = "none"
     })
@@ -309,7 +271,6 @@ function getWeatherData(lat, lon) {
       document.getElementById("loading").style.display = "none"
     })
 }
-
 function getForecastData(lat, lon) {
   fetch(`/api/forecast?lat=${lat}&lon=${lon}&units=${currentUnit}`)
     .then((response) => {
@@ -327,10 +288,8 @@ function getForecastData(lat, lon) {
       console.error("Error fetching forecast data:", error)
     })
 }
-
 function getWindDescription(speed) {
   const speedInMps = currentUnit === "imperial" ? speed / 2.237 : speed
-
   for (const desc of windDescriptions) {
     if (speedInMps <= desc.max) {
       return desc.text
@@ -338,20 +297,15 @@ function getWindDescription(speed) {
   }
   return "Hurricane"
 }
-
 function createDayForecastElement(date, dayForecasts, minTemp, maxTemp, isToday, tempUnit) {
   const forecastContainer = document.getElementById("forecast-days")
-
   const dayElement = document.createElement("div")
   dayElement.className = "forecast-day"
-
   const dayHeader = document.createElement("div")
   dayHeader.className = "day-header"
-
   const dateElement = document.createElement("div")
   dateElement.className = "forecast-date"
   dateElement.textContent = date
-
   const dayTemps = document.createElement("div")
   dayTemps.className = "day-temps"
   dayTemps.innerHTML = `
@@ -364,21 +318,16 @@ function createDayForecastElement(date, dayForecasts, minTemp, maxTemp, isToday,
             ${Math.round(minTemp)}${tempUnit}
         </span>
     `
-
   dayHeader.appendChild(dateElement)
   dayHeader.appendChild(dayTemps)
   dayElement.appendChild(dayHeader)
-
   const hoursContainer = document.createElement("div")
   hoursContainer.className = "forecast-hours"
-
   dayForecasts.forEach((forecast) => {
     const hourTime = getLocationTime(forecast.dt)
     const hourElement = document.createElement("div")
     hourElement.className = "forecast-hour"
-
     const iconUrl = getIconUrl(forecast.weather[0].icon)
-
     hourElement.innerHTML = `
             <div class="hour-time">${hourTime.toLocaleTimeString("en-US", {
               hour: "2-digit",
@@ -391,52 +340,39 @@ function createDayForecastElement(date, dayForecasts, minTemp, maxTemp, isToday,
                 <span class="hour-temp">${Math.round(forecast.main.temp)}${tempUnit}</span>
             </div>
         `
-
     hoursContainer.appendChild(hourElement)
   })
-
   dayElement.appendChild(hoursContainer)
   forecastContainer.appendChild(dayElement)
 }
-
 function updateCurrentWeather(data) {
   const locationName = data.name || "Unknown Location"
   const country = data.sys?.country || ""
-
   document.getElementById("location-name").textContent = country ? `${locationName}, ${country}` : locationName
-
   const locationTime = getLocationTime(data.dt)
   const options = { weekday: "long", year: "numeric", month: "long", day: "numeric" }
   document.getElementById("current-date").textContent = locationTime.toLocaleDateString("en-US", options)
-
   const tempUnit = currentUnit === "metric" ? "°C" : "°F"
   document.getElementById("current-temp").textContent = `${Math.round(data.main.temp)}${tempUnit}`
   document.getElementById("feels-like").textContent = `Feels like ${Math.round(data.main.feels_like)}${tempUnit}`
   document.getElementById("weather-description").textContent = data.weather[0].description
-
   const windDesc = getWindDescription(data.wind.speed)
   document.getElementById("wind-description").textContent = windDesc
-
   const iconCode = data.weather[0].icon
   const weatherIcon = document.getElementById("weather-icon")
   weatherIcon.src = getIconUrl(iconCode)
   weatherIcon.alt = data.weather[0].description
-  
   document.getElementById("weather-icon-placeholder").style.display = "none"
   weatherIcon.classList.remove("hidden")
-
   const speedUnit = currentUnit === "metric" ? "m/s" : "mph"
   const speedValue = currentUnit === "metric" ? data.wind.speed : (data.wind.speed * 2.237).toFixed(1)
   document.getElementById("wind-speed").textContent = `${speedValue} ${speedUnit}`
-
   document.getElementById("humidity").textContent = `${data.main.humidity}%`
   document.getElementById("pressure").textContent = `${data.main.pressure} hPa`
-
   const visibilityUnit = currentUnit === "metric" ? "km" : "miles"
   const visibilityValue =
     currentUnit === "metric" ? (data.visibility / 1000).toFixed(1) : (data.visibility / 1609).toFixed(1)
   document.getElementById("visibility").textContent = `${visibilityValue} ${visibilityUnit}`
-
   if (data.sys?.sunrise) {
     const sunriseTime = getLocationTime(data.sys.sunrise)
     document.getElementById("sunrise").textContent = sunriseTime.toLocaleTimeString("en-US", {
@@ -447,7 +383,6 @@ function updateCurrentWeather(data) {
   } else {
     document.getElementById("sunrise").textContent = "--:--"
   }
-
   if (data.sys?.sunset) {
     const sunsetTime = getLocationTime(data.sys.sunset)
     document.getElementById("sunset").textContent = sunsetTime.toLocaleTimeString("en-US", {
@@ -459,123 +394,133 @@ function updateCurrentWeather(data) {
     document.getElementById("sunset").textContent = "--:--"
   }
 }
-
 function updateDayButtons() {
-  if (!forecastData || !forecastData.list) return
-
-  const dayButtonsContainer = document.getElementById("day-buttons")
-  dayButtonsContainer.innerHTML = ""
-
-  const dailyForecasts = {}
-  const now = getLocationTime(Math.floor(Date.now() / 1000))
-  now.setMinutes(0, 0, 0) // Reset minutes and seconds to compare only hours
-  const todayString = now.toLocaleDateString("en-US", { weekday: "long", month: "short", day: "numeric" })
-
+  if (!forecastData || !forecastData.list) return;
+  const dayButtonsContainer = document.getElementById("day-buttons");
+  dayButtonsContainer.innerHTML = "";
+  const dailyForecasts = {};
+  const now = getLocationTime(Math.floor(Date.now() / 1000));
+  now.setMinutes(0, 0, 0);
   forecastData.list.forEach((forecast) => {
-    const date = getLocationTime(forecast.dt)
-    const dateString = date.toLocaleDateString("en-US", { weekday: "long", month: "short", day: "numeric" })
-
-    if (!dailyForecasts[dateString]) {
-      dailyForecasts[dateString] = {
-        forecasts: [],
-        minTemp: Number.POSITIVE_INFINITY,
-        maxTemp: Number.NEGATIVE_INFINITY,
-        firstForecastTime: date
+    const date = getLocationTime(forecast.dt);
+    const dateString = date.toLocaleDateString("en-US", { weekday: "long", month: "short", day: "numeric" });
+    const isToday = date.toDateString() === now.toDateString();
+    if (!isToday) {
+      if (!dailyForecasts[dateString]) {
+        dailyForecasts[dateString] = {
+          forecasts: [],
+          minTemp: Number.POSITIVE_INFINITY,
+          maxTemp: Number.NEGATIVE_INFINITY,
+          firstForecastTime: date
+        };
       }
+      dailyForecasts[dateString].forecasts.push(forecast);
+      dailyForecasts[dateString].minTemp = Math.min(dailyForecasts[dateString].minTemp, forecast.main.temp_min);
+      dailyForecasts[dateString].maxTemp = Math.max(dailyForecasts[dateString].maxTemp, forecast.main.temp_max);
     }
-
-    dailyForecasts[dateString].forecasts.push(forecast)
-    dailyForecasts[dateString].minTemp = Math.min(dailyForecasts[dateString].minTemp, forecast.main.temp_min)
-    dailyForecasts[dateString].maxTemp = Math.max(dailyForecasts[dateString].maxTemp, forecast.main.temp_max)
-  })
-
-  const forecastDates = Object.keys(dailyForecasts)
-
-  const allButton = document.createElement("button")
-  allButton.className = `btn ${currentDisplayMode === "all" ? "btn-active" : "btn-outline"}`
-  allButton.textContent = "All Days"
+  });
+  const forecastDates = Object.keys(dailyForecasts);
+  const allButton = document.createElement("button");
+  allButton.className = `btn ${currentDisplayMode === "all" ? "btn-active" : "btn-outline"}`;
+  allButton.textContent = "All Days";
   allButton.addEventListener("click", () => {
-    currentDisplayMode = "all"
-    updateForecast()
-    updateDayButtons()
-  })
-  dayButtonsContainer.appendChild(allButton)
-
+    currentDisplayMode = "all";
+    updateForecast();
+    updateDayButtons();
+  });
+  dayButtonsContainer.appendChild(allButton);
   forecastDates.forEach((date, index) => {
-    const dayButton = document.createElement("button")
-    dayButton.className = `btn ${currentDisplayMode === "day" && currentSelectedDay === index ? "btn-active" : "btn-outline"}`
-
-    const forecastDate = dailyForecasts[date].firstForecastTime
-    const isToday = forecastDate.toDateString() === now.toDateString()
-
+    const dayButton = document.createElement("button");
+    dayButton.className = `btn ${currentDisplayMode === "day" && currentSelectedDay === index ? "btn-active" : "btn-outline"}`;
+    const forecastDate = dailyForecasts[date].firstForecastTime;
     const shortDate = forecastDate.toLocaleDateString("en-US", {
       weekday: "short",
       month: "short",
       day: "numeric",
-    })
-
-    dayButton.textContent = isToday ? "Today" : shortDate
+    });
+    dayButton.textContent = shortDate;
     dayButton.addEventListener("click", () => {
-      currentDisplayMode = "day"
-      currentSelectedDay = index
-      updateForecast()
-      updateDayButtons()
-    })
-    dayButtonsContainer.appendChild(dayButton)
-  })
+      currentDisplayMode = "day";
+      currentSelectedDay = index;
+      updateForecast();
+      updateDayButtons();
+    });
+    dayButtonsContainer.appendChild(dayButton);
+  });
 }
-
+function updateTodayForecast() {
+  if (!forecastData || !forecastData.list) return;
+  const todayHoursContainer = document.getElementById("today-hours");
+  todayHoursContainer.innerHTML = "";
+  const now = getLocationTime(Math.floor(Date.now() / 1000));
+  const currentHour = now.getHours();
+  now.setMinutes(0, 0, 0);
+  const todayForecasts = forecastData.list.filter(forecast => {
+    const forecastDate = getLocationTime(forecast.dt);
+    return forecastDate.toDateString() === now.toDateString();
+  });
+  todayForecasts.forEach(forecast => {
+    const hourElement = document.createElement("div");
+    const forecastTime = getLocationTime(forecast.dt);
+    const forecastHour = forecastTime.getHours();
+    hourElement.className = `timeline-hour ${forecastHour === currentHour ? 'current' : ''}`;
+    const iconUrl = getIconUrl(forecast.weather[0].icon);
+    const tempUnit = currentUnit === "metric" ? "°C" : "°F";
+    hourElement.innerHTML = `
+      <div class="hour-time">${forecastTime.toLocaleTimeString("en-US", {
+        hour: "2-digit",
+        minute: "2-digit",
+        hour12: false,
+      })}</div>
+      <img class="hour-icon" src="${iconUrl}" alt="${forecast.weather[0].description}" width="32" height="32">
+      <div class="hour-temp">${Math.round(forecast.main.temp)}${tempUnit}</div>
+      <div class="hour-description">${forecast.weather[0].description}</div>
+    `;
+    todayHoursContainer.appendChild(hourElement);
+  });
+  const currentHourElement = todayHoursContainer.querySelector('.current');
+  if (currentHourElement) {
+    todayHoursContainer.scrollLeft = currentHourElement.offsetLeft - todayHoursContainer.offsetWidth / 2 + currentHourElement.offsetWidth / 2;
+  }
+}
 function updateForecast() {
-  if (!forecastData || !forecastData.list) return
-
-  const forecastContainer = document.getElementById("forecast-days")
-  forecastContainer.innerHTML = ""
-
-  const dailyForecasts = {}
-  const now = getLocationTime(Math.floor(Date.now() / 1000))
-  now.setMinutes(0, 0, 0) // Reset minutes and seconds to compare only hours
-  const todayString = now.toLocaleDateString("en-US", { weekday: "long", month: "short", day: "numeric" })
-
+  if (!forecastData || !forecastData.list) return;
+  updateTodayForecast();
+  const forecastContainer = document.getElementById("forecast-days");
+  forecastContainer.innerHTML = "";
+  const dailyForecasts = {};
+  const now = getLocationTime(Math.floor(Date.now() / 1000));
+  now.setMinutes(0, 0, 0);
   forecastData.list.forEach((forecast) => {
-    const date = getLocationTime(forecast.dt)
-    const dateString = date.toLocaleDateString("en-US", { weekday: "long", month: "short", day: "numeric" })
-
-    if (!dailyForecasts[dateString]) {
-      dailyForecasts[dateString] = {
-        forecasts: [],
-        minTemp: Number.POSITIVE_INFINITY,
-        maxTemp: Number.NEGATIVE_INFINITY,
-        firstForecastTime: date
+    const date = getLocationTime(forecast.dt);
+    const dateString = date.toLocaleDateString("en-US", { weekday: "long", month: "short", day: "numeric" });
+    const isToday = date.toDateString() === now.toDateString();
+    if (!isToday) {
+      if (!dailyForecasts[dateString]) {
+        dailyForecasts[dateString] = {
+          forecasts: [],
+          minTemp: Number.POSITIVE_INFINITY,
+          maxTemp: Number.NEGATIVE_INFINITY,
+          firstForecastTime: date
+        };
       }
+      dailyForecasts[dateString].forecasts.push(forecast);
+      dailyForecasts[dateString].minTemp = Math.min(dailyForecasts[dateString].minTemp, forecast.main.temp_min);
+      dailyForecasts[dateString].maxTemp = Math.max(dailyForecasts[dateString].maxTemp, forecast.main.temp_max);
     }
-
-    dailyForecasts[dateString].forecasts.push(forecast)
-    dailyForecasts[dateString].minTemp = Math.min(dailyForecasts[dateString].minTemp, forecast.main.temp_min)
-    dailyForecasts[dateString].maxTemp = Math.max(dailyForecasts[dateString].maxTemp, forecast.main.temp_max)
-  })
-
-  const forecastDates = Object.keys(dailyForecasts)
-  const tempUnit = currentUnit === "metric" ? "°C" : "°F"
-
+  });
+  const forecastDates = Object.keys(dailyForecasts);
+  const tempUnit = currentUnit === "metric" ? "°C" : "°F";
   if (currentDisplayMode === "all") {
-    forecastDates.slice(0, 5).forEach((date) => {
-      const dayData = dailyForecasts[date]
-      const isToday = dayData.firstForecastTime.toDateString() === now.toDateString()
-      createDayForecastElement(date, dayData.forecasts, dayData.minTemp, dayData.maxTemp, isToday, tempUnit)
-    })
+    forecastDates.forEach((date) => {
+      const dayData = dailyForecasts[date];
+      createDayForecastElement(date, dayData.forecasts, dayData.minTemp, dayData.maxTemp, false, tempUnit);
+    });
   } else {
-    const selectedDate = forecastDates[currentSelectedDay]
+    const selectedDate = forecastDates[currentSelectedDay];
     if (selectedDate && dailyForecasts[selectedDate]) {
-      const dayData = dailyForecasts[selectedDate]
-      const isToday = dayData.firstForecastTime.toDateString() === now.toDateString()
-      createDayForecastElement(
-        selectedDate,
-        dayData.forecasts,
-        dayData.minTemp,
-        dayData.maxTemp,
-        isToday,
-        tempUnit,
-      )
+      const dayData = dailyForecasts[selectedDate];
+      createDayForecastElement(selectedDate, dayData.forecasts, dayData.minTemp, dayData.maxTemp, false, tempUnit);
     }
   }
 }
