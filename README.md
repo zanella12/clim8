@@ -2,7 +2,7 @@
 
 A clean, minimalistic weather app that delivers real-time data using the OpenWeather API.
 
-![image](https://github.com/user-attachments/assets/668b5122-c006-47ce-9432-665ff83fd999)
+![image](https://github.com/user-attachments/assets/7ab860e7-3416-43f4-99d8-19c5f87800ae)
 
 ## Features
 
