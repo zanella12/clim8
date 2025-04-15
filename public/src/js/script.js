@@ -449,10 +449,20 @@ function updateTodayForecast() {
   const now = getLocationTime(Math.floor(Date.now() / 1000));
   const currentHour = now.getHours();
   now.setMinutes(0, 0, 0);
-  const todayForecasts = forecastData.list.filter(forecast => {
+  let todayForecasts = forecastData.list.filter(forecast => {
     const forecastDate = getLocationTime(forecast.dt);
     return forecastDate.toDateString() === now.toDateString();
   });
+  if (todayForecasts.length === 0) {
+    const sortedForecasts = [...forecastData.list].sort((a, b) => b.dt - a.dt);
+    const lastForecast = sortedForecasts.find(forecast => {
+      const forecastDate = getLocationTime(forecast.dt);
+      return forecastDate <= now;
+    });
+    if (lastForecast) {
+      todayForecasts = [lastForecast];
+    }
+  }
   todayForecasts.forEach(forecast => {
     const hourElement = document.createElement("div");
     const forecastTime = getLocationTime(forecast.dt);
@@ -507,14 +517,24 @@ function updateForecast() {
   const tempUnit = currentUnit === "metric" ? "°C" : "°F";
   if (currentDisplayMode === "all") {
     forecastDates.forEach((date) => {
-      const dayData = dailyForecasts[date];
-      createDayForecastElement(date, dayData.forecasts, dayData.minTemp, dayData.maxTemp, false, tempUnit);
+      createDayForecastElement(
+        date,
+        dailyForecasts[date].forecasts,
+        dailyForecasts[date].minTemp,
+        dailyForecasts[date].maxTemp,
+        false,
+        tempUnit
+      );
     });
-  } else {
+  } else if (currentDisplayMode === "day" && forecastDates[currentSelectedDay]) {
     const selectedDate = forecastDates[currentSelectedDay];
-    if (selectedDate && dailyForecasts[selectedDate]) {
-      const dayData = dailyForecasts[selectedDate];
-      createDayForecastElement(selectedDate, dayData.forecasts, dayData.minTemp, dayData.maxTemp, false, tempUnit);
-    }
+    createDayForecastElement(
+      selectedDate,
+      dailyForecasts[selectedDate].forecasts,
+      dailyForecasts[selectedDate].minTemp,
+      dailyForecasts[selectedDate].maxTemp,
+      false,
+      tempUnit
+    );
   }
 }
