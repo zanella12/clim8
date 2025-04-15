@@ -309,15 +309,9 @@ function createDayForecastElement(date, dayForecasts, minTemp, maxTemp, isToday,
   const dayTemps = document.createElement("div")
   dayTemps.className = "day-temps"
   dayTemps.innerHTML = `
-        <span class="hour-temp hour-temp-max">
-            <img src="src/svg/thermometer-warmer.svg" alt="Max" width="50" height="50" style="vertical-align: middle; margin-right: 4px;">
-            ${Math.round(maxTemp)}${tempUnit}
-        </span>
-        <span class="hour-temp hour-temp-min">
-            <img src="src/svg/thermometer-colder.svg" alt="Min" width="50" height="50" style="vertical-align: middle; margin-right: 4px;">
-            ${Math.round(minTemp)}${tempUnit}
-        </span>
-    `
+    <span class="hour-temp-max">${Math.round(maxTemp)}${tempUnit}</span>
+    <span class="hour-temp-min">${Math.round(minTemp)}${tempUnit}</span>
+  `
   dayHeader.appendChild(dateElement)
   dayHeader.appendChild(dayTemps)
   dayElement.appendChild(dayHeader)
@@ -473,8 +467,8 @@ function updateTodayForecast() {
         hour12: false,
       })}</div>
       <img class="hour-icon" src="${iconUrl}" alt="${forecast.weather[0].description}" width="32" height="32">
-      <div class="hour-temp">${Math.round(forecast.main.temp)}${tempUnit}</div>
       <div class="hour-description">${forecast.weather[0].description}</div>
+      <div class="hour-temp">${Math.round(forecast.main.temp)}${tempUnit}</div>
     `;
     todayHoursContainer.appendChild(hourElement);
   });
